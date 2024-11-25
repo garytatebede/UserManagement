@@ -18,45 +18,49 @@ public class UserController : ControllerBase
     }
     
     [HttpPost]
-    public IActionResult Create(string username, string email)
+    public IActionResult Create(string username)
     {
+        // Validate that it is a unique Username
+        if (_userRepository.Get(username) != null)
+        {
+            return BadRequest($"A user called '{username}' already exists");
+        }
+        
         var user = new User
         {
             Username = username,
-            Email = email
+            Id = Guid.NewGuid()
         };
 
         _userRepository.Create(user);
 
-        return Ok(_userRepository.GetAll());
-    }
-    
-    [HttpGet]
-    public IActionResult Get(string username)
-    {
-        var user = _userRepository.Get(username);
-        
         return Ok(user);
     }
     
-    [HttpGet("all")]
-    public IActionResult GetAll()
+    [HttpGet("{id:guid?}")]
+    public IActionResult Get(Guid? id)
     {
-        var users = _userRepository.GetAll();
-        
-        return Ok(users);
+        if (!id.HasValue)
+        {
+            return Ok(_userRepository.GetAll());
+        }
+
+        var user = _userRepository.Get(id);
+
+        // Seems to auto add the NotFound is user is null
+        return Ok(user);
     }
 
-    [HttpDelete]
-    public IActionResult Delete(string username)
+    [HttpDelete("{id:guid}")]
+    public IActionResult Delete(Guid id)
     {
-        var bDeleted = _userRepository.Delete(username);
+        var bDeleted = _userRepository.Delete(id);
 
         if (!bDeleted)
         {
             return NotFound("User not found");
         }
         
-        return Ok($"{username} deleted");
+        return Ok($"{id} deleted");
     }
 }

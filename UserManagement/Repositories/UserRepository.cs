@@ -17,13 +17,18 @@ public class UserRepository : IUserRepository
         return _users.Find(x => x.Username == username);
     }
     
+    public User Get(Guid? id)
+    {
+        return _users.Find(x => x.Id == id);
+    }
+    
     public IEnumerable<User> GetAll()
     {
         return _users;
     }
 
-    public bool Delete(string username)
+    public bool Delete(Guid? id)
     {
-       return _users.Remove(Get(username)); 
+       return _users.Remove(Get(id)); 
     }
 }
