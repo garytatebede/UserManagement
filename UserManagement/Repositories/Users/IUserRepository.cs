@@ -17,4 +17,6 @@ public interface IUserRepository
     IEnumerable<User> GetAll();
 
     bool Delete(Guid id);
+
+    void Update(User user);
 }
