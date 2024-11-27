@@ -27,8 +27,6 @@ public sealed class GetUserByIdService : IGetUserByIdService
 
     private static void Validate(GetByIdRequest request)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
         if (request.Id == Guid.Empty)
         {
             throw new ArgumentException("Guid can't be empty");

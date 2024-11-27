@@ -25,8 +25,6 @@ public sealed class DeleteUserService : IDeleteUserService
 
     private static void Validate(DeleteByIdRequest request)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
         if (request.Id == Guid.Empty)
         {
             throw new ArgumentException("Guid can't be empty");
