@@ -49,7 +49,7 @@ public class CreateUserServiceTests
     [TestCase("")]
     [TestCase(null)]
     [TestCase("   ")]
-    public void CreateUser_BadRquestWithUsername(string username)
+    public void CreateUser_BadRequestWithUsername(string username)
     {
         // Arrange
         var request = new CreateUserRequest(username);
