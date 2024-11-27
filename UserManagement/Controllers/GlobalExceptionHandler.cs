@@ -12,12 +12,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var result = GetStatusAndTitle(exception);
+        var (code, title) = GetStatusAndTitle(exception);
 
         var problemDetails = new ProblemDetails
         {
-            Status = result.Code,
-            Title = result.Title,
+            Status = code,
+            Title = title,
             Extensions = new Dictionary<string, object?>
             {
                 { "errors", new object[]{ exception } }
@@ -33,16 +33,25 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
     private static (int Code, string Title) GetStatusAndTitle(Exception exception)
     {
-        if (exception is UserNotFoundException)
+        return exception switch
         {
-            return (StatusCodes.Status404NotFound, "User not found");
-        }
+            UserNotFoundException unfe => (StatusCodes.Status404NotFound, $"User with id: {unfe.Id} not found"),
+            UserExistsException uee => (StatusCodes.Status409Conflict, $"User with username: {uee.Username} already exists"),
+            _ => (StatusCodes.Status503ServiceUnavailable, "Service Unavailable")
+        };
 
-        if (exception is UserExistsException)
-        {
-            return (StatusCodes.Status409Conflict, "User already exists");
-        }
+        // Either are get the same result, but I prefer the switch expression
 
-        return (StatusCodes.Status503ServiceUnavailable, "Service Unavailable");
+        //if (exception is UserNotFoundException unfe)
+        //{
+        //    return (StatusCodes.Status404NotFound, $"User with id: {unfe.Id} not found");
+        //}
+
+        //if (exception is UserExistsException uee)
+        //{
+        //    return (StatusCodes.Status409Conflict, $"User with username: {uee.Username} already exists");
+        //}
+
+        // return (StatusCodes.Status503ServiceUnavailable, "Service Unavailable");
     }
 }
