@@ -65,4 +65,11 @@ public class UserRepository : IUserRepository
     {
         return _users.Remove(id);
     }
+    
+    public void Update(User user)
+    {
+        var transactionUser = _userModelMapper.ToTransactionUser(user);
+        
+        _users[user.Id] = transactionUser;
+    }
 }
