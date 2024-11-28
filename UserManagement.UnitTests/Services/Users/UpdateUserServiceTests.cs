@@ -44,6 +44,30 @@ public class UpdateUserServiceTests
         _userRepositoryMock.Verify(m => m.ExistsByUsername(newUsername), Times.Once);
     }
     
+    [TestCase("Old Name", "Old Name")]
+    [TestCase("Old Name", "old Name")]
+    public void UpdateUser_UsernameStaysSame_Success(string oldName, string newName)
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+    
+        _userRepositoryMock.Setup(m => m.GetById(id)).Returns(new User(id, oldName));
+        _userRepositoryMock.Setup(m => m.ExistsByUsername(oldName)).Returns(true);
+
+        var request = new UpdateUserRequest(id, newName);
+    
+        // Act
+        var updated = _service.Update(request);
+    
+        // Assert
+        updated.Id.Should().Be(id);
+        updated.Username.Should().Be(oldName);
+        
+        _userRepositoryMock.Verify(m => m.GetById(id), Times.Once);
+        _userRepositoryMock.Verify(m => m.ExistsByUsername(oldName), Times.Never);
+        _userRepositoryMock.Verify(m => m.Update(It.IsAny<User>()), Times.Never);
+    }
+    
     [TestCase("")]
     [TestCase(null)]
     [TestCase("   ")]
@@ -90,12 +114,13 @@ public class UpdateUserServiceTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        var username = "Gary Tate";
+        var username = "Old";
+        var newUsername = "New";
     
-        _userRepositoryMock.Setup(m => m.Exists(id)).Returns(true);
-        _userRepositoryMock.Setup(m => m.ExistsByUsername(username)).Returns(true);
+        _userRepositoryMock.Setup(m => m.GetById(id)).Returns(new User(id, username));
+        _userRepositoryMock.Setup(m => m.ExistsByUsername(newUsername)).Returns(true);
 
-        var request = new UpdateUserRequest(id, username);
+        var request = new UpdateUserRequest(id, newUsername);
     
         // Act
         Action shouldThrow = () => _service.Update(request);
@@ -103,10 +128,10 @@ public class UpdateUserServiceTests
         // Assert
         shouldThrow.Should()
             .Throw<UserExistsException>()
-            .WithMessage($"User with name {username} already exists");
+            .WithMessage($"User with name {newUsername} already exists");
         
-        _userRepositoryMock.Verify(m => m.ExistsByUsername(username), Times.Once);
-        _userRepositoryMock.Verify(m => m.GetById(id), Times.Never);
-
+        _userRepositoryMock.Verify(m => m.ExistsByUsername(newUsername), Times.Once);
+        _userRepositoryMock.Verify(m => m.GetById(id), Times.Once);
     }
+
 }

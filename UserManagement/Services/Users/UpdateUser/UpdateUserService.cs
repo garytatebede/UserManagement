@@ -16,17 +16,22 @@ public sealed class UpdateUserService : IUpdateUserService
     {
         ValidateRequest(request);
 
-        if (!_userRepository.Exists(request.Id))
+        var user = _userRepository.GetById(request.Id);
+
+        if (user is null)
         {
             throw new UserNotFoundException(request.Id);
         }
-        
+
+        if (user.Username.Equals(request.Username, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return user;
+        }
+
         if (_userRepository.ExistsByUsername(request.Username))
         {
             throw new UserExistsException(request.Username);
         }
-        
-        var user = _userRepository.GetById(request.Id);
 
         var updatedUser = user with { Username = request.Username };
         
