@@ -14,8 +14,6 @@ public interface IUserRepository
 
     User? GetById(Guid id);
 
-    IEnumerable<User> GetAll();
-
     bool Delete(Guid id);
 
     void Update(User user);

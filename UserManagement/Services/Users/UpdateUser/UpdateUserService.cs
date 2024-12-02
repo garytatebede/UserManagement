@@ -34,7 +34,7 @@ public sealed class UpdateUserService : IUpdateUserService
         }
 
         var updatedUser = user with { Username = request.Username };
-        
+
         _userRepository.Update(updatedUser);
 
         return updatedUser;
