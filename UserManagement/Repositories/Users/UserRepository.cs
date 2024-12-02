@@ -1,75 +1,137 @@
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
+using UserManagement.Configuration;
 using UserManagement.Repositories.Users.Mappers;
 using UserManagement.Services.Users;
 
 namespace UserManagement.Repositories.Users;
 
-public class UserRepository : IUserRepository
+internal sealed class UserRepository : IUserRepository
 {
-    private readonly Dictionary<Guid, TransactionUser> _users;
-    private readonly IUserModelMapper _userModelMapper;
+    private readonly IOptions<DatabaseConfiguration> _options;
+    private readonly IUserModelMapper _modelMapper;
 
-    public UserRepository(IUserModelMapper userModelMapper)
+    public UserRepository(IOptions<DatabaseConfiguration> options, IUserModelMapper modelMapper)
     {
-        _users = [];
-        _userModelMapper = userModelMapper;
+        _options = options;
+        _modelMapper = modelMapper;
     }
 
     public void Create(User user)
     {
-        var transactionUser = _userModelMapper.ToTransactionUser(user);
+        using var connection = GetConnection();
 
-        _users.Add(transactionUser.Id, transactionUser);
+        var transactionModel = _modelMapper.ToTransactionUser(user);
+
+        const string sql = @"
+            INSERT INTO Users (Id, Username)
+            VALUES (@Id, @Username);";
+
+        connection.Execute(sql, user);
     }
 
     public User? GetByUsername(string username)
     {
-        var record = _users.Values.FirstOrDefault(x => x.Username.Equals(username));
+        using var connection = GetConnection();
 
-        if (record == null)
+        const string sql = @"
+            SELECT Id, Username
+            FROM Users
+            WHERE Username = @Username;";
+
+        var transactionModel = connection.QueryFirstOrDefault<TransactionUser>(sql, new { Username = username });
+
+        if (transactionModel is null)
         {
             return null;
         }
 
-        return _userModelMapper.ToUser(record);
-    }
-
-    public User? GetById(Guid id)
-    {
-        if (!_users.TryGetValue(id, out var record))
-        {
-            return null;
-        }
-
-        return _userModelMapper.ToUser(record);
+        return _modelMapper.ToUser(transactionModel);
     }
 
     public bool ExistsByUsername(string username)
     {
-        return _users.Values.Any(x => x.Username.Equals(username));
+        using var connection = GetConnection();
+
+        const string sql = @"
+            SELECT CASE 
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM Users
+                    WHERE Username = @Username
+                ) 
+                THEN CAST(1 AS BIT) 
+                ELSE CAST(0 AS BIT) 
+            END;";
+
+        return connection.ExecuteScalar<bool>(sql, new { Username = username });
     }
 
     public bool Exists(Guid id)
     {
-        return _users.ContainsKey(id);
+        using var connection = GetConnection();
+
+        const string sql = @"
+            SELECT CASE 
+            WHEN EXISTS (
+                    SELECT 1
+                    FROM Users
+                    WHERE Id = @Id
+                ) 
+                THEN CAST(1 AS BIT) 
+                ELSE CAST(0 AS BIT) 
+            END;";
+
+        return connection.ExecuteScalar<bool>(sql, new { Id = id });
     }
 
-    public IEnumerable<User> GetAll()
+    public User? GetById(Guid id)
     {
-        return _users.Values.Select(_userModelMapper.ToUser);
+        using var connection = GetConnection();
 
-        // Above is the short handed version of
-        //return _users.Values.Select(u =>_userModelMapper.ToUser(u));
+        const string sql = @"
+            SELECT Id, Username
+            FROM Users
+            WHERE Id = @Id;";
+
+        var transactionModel = connection.QueryFirstOrDefault<TransactionUser>(sql, new { Id = id });
+
+        if (transactionModel is null)
+        {
+            return null;
+        }
+
+        return _modelMapper.ToUser(transactionModel);
     }
 
     public bool Delete(Guid id)
     {
-        return _users.Remove(id);
+        using var connection = GetConnection();
+
+        const string sql = @"
+            DELETE FROM Users
+            WHERE Id = @Id;";
+
+        var rowsAffected = connection.Execute(sql, new { Id = id });
+        return rowsAffected > 0;
     }
-    
+
     public void Update(User user)
     {
-        var transactionUser = _userModelMapper.ToTransactionUser(user);
-        
-        _users[user.Id] = transactionUser;
+        using var connection = GetConnection();
+
+        const string sql = @"
+            UPDATE Users
+            SET Username = @Username,
+                ResponseBody = @ResponseBody
+            WHERE Id = @Id;";
+
+        connection.Execute(sql, user);
+    }
+
+    private SqlConnection GetConnection()
+    {
+        return new SqlConnection(_options.Value.ConnectionString);
     }
 }

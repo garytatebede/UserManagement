@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using UserManagement.Configuration;
 using UserManagement.Controllers;
+using UserManagement.Migrations;
 using UserManagement.Repositories.Users;
 using UserManagement.Repositories.Users.Mappers;
 using UserManagement.Services;
@@ -12,6 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
+
+builder.Services.Configure<DatabaseConfiguration>(builder.Configuration.GetSection("Database"));
 
 // Services
 builder.Services.AddScoped<ICreateUserService, CreateUserService>();
@@ -25,7 +29,21 @@ builder.Services.AddSingleton<IUserModelMapper, UserModelMapper>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
+// Migration scripts
+builder.Services.RegisterAllMigrationScripts();
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var scripts = scope.ServiceProvider.GetServices<IMigrationsScript>()
+        .OrderBy(s => s.PriorityOrderToRun);
+
+    foreach (var databaseSetup in scripts)
+    {
+        databaseSetup.InitializeAsync().GetAwaiter().GetResult();
+    }
+}
 
 // Configure the HTTP request pipeline
 app.MapControllers();
