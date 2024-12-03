@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using Moq;
-using UserManagement.Repositories.Users;
-using UserManagement.Services.Users;
-using UserManagement.Services.Users.GetUserById;
+using UserManagementWebApi.Repositories.Users;
+using UserManagementWebApi.Services.Users;
+using UserManagementWebApi.Services.Users.GetUserById;
 
 namespace UserManagement.UnitTests.Services.Users;
 
@@ -27,25 +27,25 @@ public class GetUserByIdServiceTests
         // Arrange
         var id = Guid.NewGuid();
         var username = "Gary Tate";
-        
+
         var request = new GetByIdRequest(id);
 
         _userRepositoryMock.Setup(m => m.GetById(request.Id)).Returns(new User(id, username));
-        
+
         // Act
         var user = _service.Get(request);
-        
+
         // Assert
         user.Id.Should().Be(id);
         user.Username.Should().Be(username);
     }
-    
+
     [Test]
     public void GetUserById_GuidIsEmpty_Error()
     {
         // Arrange
         var id = Guid.Empty;
-        
+
         var request = new GetByIdRequest(id);
 
         // Act
@@ -55,20 +55,20 @@ public class GetUserByIdServiceTests
         shouldThrow.Should()
             .Throw<ArgumentException>()
             .WithMessage("Guid can't be empty");
-        
+
         _userRepositoryMock.Verify(m => m.GetById(It.IsAny<Guid>()), Times.Never);
     }
-    
+
     [Test]
     public void GetUserById_UserDoesNotExist_Error()
     {
         // Arrange
         var id = Guid.NewGuid();
-        
+
         var request = new GetByIdRequest(id);
 
         _userRepositoryMock.Setup(m => m.GetById(It.IsAny<Guid>())).Returns((User)null);
-        
+
         // Act
         Action shouldThrow = () => _service.Get(request);
 

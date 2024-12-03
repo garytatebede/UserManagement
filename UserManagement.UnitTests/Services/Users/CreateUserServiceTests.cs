@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
 using Moq;
-using UserManagement.Repositories.Users;
-using UserManagement.Services;
-using UserManagement.Services.Users;
-using UserManagement.Services.Users.CreateUser;
+using UserManagementWebApi.Repositories.Users;
+using UserManagementWebApi.Services;
+using UserManagementWebApi.Services.Users;
+using UserManagementWebApi.Services.Users.CreateUser;
 
 namespace UserManagement.UnitTests.Services.Users;
 
