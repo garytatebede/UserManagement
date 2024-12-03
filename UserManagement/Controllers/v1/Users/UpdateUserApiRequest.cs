@@ -1,5 +1,4 @@
-﻿using UserManagement.Services.Users.CreateUser;
-using UserManagement.Services.Users.UpdateUser;
+﻿using UserManagement.Services.Users.UpdateUser;
 
 namespace UserManagement.Controllers.v1.Users;
 

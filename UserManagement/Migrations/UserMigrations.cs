@@ -28,8 +28,16 @@ internal class UserMigrations : IMigrationsScript
             );
         END
 
-        IF NOT EXISTS (SELECT * FROM sys.check_constraints WHERE object_id = OBJECT_ID(N'UQ_Username') AND parent_object_id = OBJECT_ID(N'Users'))
-        ALTER TABLE Users ADD CONSTRAINT UQ_Username UNIQUE (Username);
+        IF OBJECT_ID(N'Users', 'U') IS NOT NULL
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM sys.indexes
+                WHERE name = 'UQ_Username' 
+                AND object_id = OBJECT_ID(N'Users')
+            )
+            ALTER TABLE Users ADD CONSTRAINT UQ_Username UNIQUE (Username);
+        END;
      ";
 
         using var connection = new SqlConnection(_options.Value.ConnectionString);

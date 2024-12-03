@@ -16,7 +16,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
         var problemDetails = new ProblemDetails
         {
-            Status = code,
+            Status = 400,
             Title = title,
             Extensions = new Dictionary<string, object?>
             {
@@ -24,7 +24,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             }
         };
 
-        httpContext.Response.StatusCode = problemDetails.Status.Value;
+        //  httpContext.Response.StatusCode = 400;
 
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 

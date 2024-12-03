@@ -7,7 +7,7 @@ using UserManagement.Services.Users.UpdateUser;
 namespace UserManagement.Controllers.v1.Users;
 
 [ApiController]
-[Route("api/users")]
+[Route("api/v1/users")]
 public class UserController : ControllerBase
 {
     private readonly ICreateUserService _createUserService;
@@ -50,7 +50,7 @@ public class UserController : ControllerBase
 
         return NoContent();
     }
-    
+
     [HttpPut("{id:guid}")]
     public IActionResult Update(Guid id, [FromBody] UpdateUserApiRequest request)
     {

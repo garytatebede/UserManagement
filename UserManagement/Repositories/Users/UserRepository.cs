@@ -123,8 +123,7 @@ internal sealed class UserRepository : IUserRepository
 
         const string sql = @"
             UPDATE Users
-            SET Username = @Username,
-                ResponseBody = @ResponseBody
+            SET Username = @Username
             WHERE Id = @Id;";
 
         connection.Execute(sql, user);
