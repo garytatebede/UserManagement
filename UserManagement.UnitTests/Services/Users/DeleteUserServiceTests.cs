@@ -1,10 +1,8 @@
 ﻿using FluentAssertions;
 using Moq;
-using UserManagement.Repositories.Users;
-using UserManagement.Services;
-using UserManagement.Services.Users;
-using UserManagement.Services.Users.CreateUser;
-using UserManagement.Services.Users.DeleteUser;
+using UserManagementWebApi.Repositories.Users;
+using UserManagementWebApi.Services.Users;
+using UserManagementWebApi.Services.Users.DeleteUser;
 
 namespace UserManagement.UnitTests.Services.Users;
 
@@ -30,7 +28,7 @@ public class DeleteUserServiceTests
         var id = Guid.NewGuid();
 
         var request = new DeleteByIdRequest(id);
-        
+
         _userRepositoryMock.Setup(m => m.Exists(id)).Returns(true);
 
         // Act
@@ -39,7 +37,7 @@ public class DeleteUserServiceTests
         // Assert
         _userRepositoryMock.Verify(m => m.Delete(id), Times.Once);
     }
-    
+
     [Test]
     public void DeleteUser_UserNotFound_ReturnsError()
     {
@@ -47,12 +45,12 @@ public class DeleteUserServiceTests
         var id = Guid.NewGuid();
 
         var request = new DeleteByIdRequest(id);
-        
+
         _userRepositoryMock.Setup(m => m.Exists(id)).Returns(false);
 
         // Act
         Action shouldThrow = () => _service.Delete(request);
-        
+
         // Assert
         shouldThrow.Should()
             .Throw<UserNotFoundException>()
@@ -60,7 +58,7 @@ public class DeleteUserServiceTests
 
         _userRepositoryMock.Verify(m => m.Delete(id), Times.Never);
     }
-    
+
     [Test]
     public void DeleteUser_GuidEmpty_ReturnsError()
     {
@@ -68,10 +66,10 @@ public class DeleteUserServiceTests
         var id = Guid.Empty;
 
         var request = new DeleteByIdRequest(id);
-        
+
         // Act
         Action shouldThrow = () => _service.Delete(request);
-        
+
         // Assert
         shouldThrow.Should()
             .Throw<ArgumentException>()

@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using UserManagement.Controllers.v1.Users;
+using UserManagementWebApi.Controllers.v1.Users;
 
 namespace UserManagement.IntegrationTests.v1.Users;
 

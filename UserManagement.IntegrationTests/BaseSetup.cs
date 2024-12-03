@@ -4,9 +4,9 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using UserManagement.Configuration;
-using UserManagement.Controllers.v1.Users;
-using UserManagement.Services.Users;
+using UserManagementWebApi.Configuration;
+using UserManagementWebApi.Controllers.v1.Users;
+using UserManagementWebApi.Services.Users;
 
 namespace UserManagement.IntegrationTests;
 
